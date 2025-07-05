@@ -4,6 +4,7 @@ import axios from "axios";
 export default function App() {
   const [text, setText] = useState("");
   const [results, setResults] = useState([]);
+  const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(false);
 
   const detectPII = async () => {
@@ -11,11 +12,20 @@ export default function App() {
     try {
       const response = await axios.post("http://localhost:5000/detect-pii", { text });
       setResults(response.data);
+      generateSummary(response.data);
     } catch (error) {
       console.error(error);
       alert("Error detecting PII");
     }
     setLoading(false);
+  };
+
+  const generateSummary = (data) => {
+    const counts = {};
+    data.forEach((item) => {
+      counts[item.entity_type] = (counts[item.entity_type] || 0) + 1;
+    });
+    setSummary(counts);
   };
 
   return (
@@ -38,6 +48,20 @@ export default function App() {
       {results.length > 0 && (
         <div>
           <h2>Detected PII:</h2>
+          
+          {/* Summary Section */}
+          <div>
+            <h3>PII Summary:</h3>
+            <ul>
+              {Object.entries(summary).map(([type, count]) => (
+                <li key={type}>
+                  {type}: {count}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Detailed Results Table */}
           <table border="1" cellPadding="5">
             <thead>
               <tr>
