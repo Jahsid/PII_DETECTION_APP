@@ -6,6 +6,7 @@ export default function App() {
   const [results, setResults] = useState([]);
   const [summary, setSummary] = useState({});
   const [riskLevel, setRiskLevel] = useState("");
+  const [suggestion, setSuggestion] = useState("");
   const [loading, setLoading] = useState(false);
 
   const detectPII = async () => {
@@ -51,10 +52,19 @@ export default function App() {
       }
     });
 
-    if (score >= 6) setRiskLevel("⚠️ High");
-    else if (score >= 3) setRiskLevel("⚠️ Medium");
-    else if (score > 0) setRiskLevel("✅ Low");
-    else setRiskLevel("✅ No Risk Detected");
+    if (score >= 6) {
+      setRiskLevel("⚠️ High");
+      setSuggestion("⚠️ High risk detected. Immediately review the content and remove or redact sensitive information before sharing.");
+    } else if (score >= 3) {
+      setRiskLevel("⚠️ Medium");
+      setSuggestion("⚠️ Medium risk. Consider masking or redacting PII before sharing the text.");
+    } else if (score > 0) {
+      setRiskLevel("✅ Low");
+      setSuggestion("✅ Low risk. Review the detected PII to ensure compliance.");
+    } else {
+      setRiskLevel("✅ No Risk Detected");
+      setSuggestion("✅ No PII detected. You can safely share the content.");
+    }
   };
 
   return (
@@ -80,6 +90,9 @@ export default function App() {
 
           {/* Risk Level */}
           <h3>Estimated Risk Level: {riskLevel}</h3>
+
+          {/* Suggestion */}
+          <p><strong>Suggestion:</strong> {suggestion}</p>
 
           {/* Summary Section */}
           <div>
