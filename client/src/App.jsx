@@ -5,6 +5,7 @@ export default function App() {
   const [text, setText] = useState("");
   const [results, setResults] = useState([]);
   const [summary, setSummary] = useState({});
+  const [riskLevel, setRiskLevel] = useState("");
   const [loading, setLoading] = useState(false);
 
   const detectPII = async () => {
@@ -13,6 +14,7 @@ export default function App() {
       const response = await axios.post("http://localhost:5000/detect-pii", { text });
       setResults(response.data);
       generateSummary(response.data);
+      estimateRisk(response.data);
     } catch (error) {
       console.error(error);
       alert("Error detecting PII");
@@ -26,6 +28,33 @@ export default function App() {
       counts[item.entity_type] = (counts[item.entity_type] || 0) + 1;
     });
     setSummary(counts);
+  };
+
+  const estimateRisk = (data) => {
+    let score = 0;
+
+    data.forEach((item) => {
+      switch (item.entity_type) {
+        case "EMAIL_ADDRESS":
+        case "PHONE_NUMBER":
+        case "PERSON":
+          score += 1;
+          break;
+        case "CREDIT_CARD":
+        case "US_SSN":
+        case "US_BANK_NUMBER":
+        case "PASSPORT":
+          score += 3;
+          break;
+        default:
+          score += 0.5;
+      }
+    });
+
+    if (score >= 6) setRiskLevel("⚠️ High");
+    else if (score >= 3) setRiskLevel("⚠️ Medium");
+    else if (score > 0) setRiskLevel("✅ Low");
+    else setRiskLevel("✅ No Risk Detected");
   };
 
   return (
@@ -48,7 +77,10 @@ export default function App() {
       {results.length > 0 && (
         <div>
           <h2>Detected PII:</h2>
-          
+
+          {/* Risk Level */}
+          <h3>Estimated Risk Level: {riskLevel}</h3>
+
           {/* Summary Section */}
           <div>
             <h3>PII Summary:</h3>
