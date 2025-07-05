@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 export default function App() {
   const [text, setText] = useState("");
@@ -33,7 +34,6 @@ export default function App() {
 
   const estimateRisk = (data) => {
     let score = 0;
-
     data.forEach((item) => {
       switch (item.entity_type) {
         case "EMAIL_ADDRESS":
@@ -54,22 +54,51 @@ export default function App() {
 
     if (score >= 6) {
       setRiskLevel("⚠️ High");
-      setSuggestion("⚠️ High risk detected. Immediately review the content and remove or redact sensitive information before sharing.");
+      setSuggestion("⚠️ High risk detected. Immediately review the content and redact sensitive information.");
     } else if (score >= 3) {
       setRiskLevel("⚠️ Medium");
-      setSuggestion("⚠️ Medium risk. Consider masking or redacting PII before sharing the text.");
+      setSuggestion("⚠️ Medium risk. Consider masking or redacting PII before sharing.");
     } else if (score > 0) {
       setRiskLevel("✅ Low");
-      setSuggestion("✅ Low risk. Review the detected PII to ensure compliance.");
+      setSuggestion("✅ Low risk. Review detected PII to ensure compliance.");
     } else {
       setRiskLevel("✅ No Risk Detected");
       setSuggestion("✅ No PII detected. You can safely share the content.");
     }
   };
 
+  const getHighlightedText = () => {
+    if (!results.length) return text;
+
+    const sortedResults = [...results].sort((a, b) => a.start - b.start);
+    const parts = [];
+    let lastIndex = 0;
+
+    sortedResults.forEach((item, idx) => {
+      if (item.start < lastIndex) {
+        // Overlapping entity, skip
+        return;
+      }
+      parts.push(text.substring(lastIndex, item.start));
+      parts.push(
+        <span
+          key={idx}
+          className="highlight"
+          title={item.entity_type}
+        >
+          {text.substring(item.start, item.end)}
+        </span>
+      );
+      lastIndex = item.end;
+    });
+
+    parts.push(text.substring(lastIndex));
+    return parts;
+  };
+
   return (
-    <div>
-      <h1>PII Detection</h1>
+    <div className="container">
+      <h1>🔍 PII Detection Tool</h1>
 
       <textarea
         rows="6"
@@ -85,8 +114,11 @@ export default function App() {
       </button>
 
       {results.length > 0 && (
-        <div>
+        <div className="results">
           <h2>Detected PII:</h2>
+
+          {/* Highlighted Text */}
+          <p className="highlighted-text">{getHighlightedText()}</p>
 
           {/* Risk Level */}
           <h3>Estimated Risk Level: {riskLevel}</h3>
