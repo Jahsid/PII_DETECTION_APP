@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import "./App.css";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 export default function App() {
   const [text, setText] = useState("");
@@ -18,7 +19,7 @@ export default function App() {
       setResults(response.data);
       generateSummary(response.data);
       estimateRisk(response.data);
-      setRedactedText(""); // Reset redacted text on new detection
+      setRedactedText(""); 
     } catch (error) {
       console.error(error);
       alert("Error detecting PII");
@@ -109,6 +110,13 @@ export default function App() {
     setRedactedText(redacted);
   };
 
+  const getChartData = () => {
+    return Object.entries(summary).map(([type, count]) => ({
+      type,
+      count,
+    }));
+  };
+
   return (
     <div className="container">
       <h1>🔍 PII Detection Tool</h1>
@@ -132,12 +140,10 @@ export default function App() {
 
           <p className="highlighted-text">{getHighlightedText()}</p>
 
-          {/* Redact Button */}
           <button onClick={redactText} className="redact-btn">
             Redact PII
           </button>
 
-          {/* Show Redacted Text */}
           {redactedText && (
             <div className="redacted-section">
               <h3>Redacted Text:</h3>
@@ -156,6 +162,19 @@ export default function App() {
               ))}
             </ul>
           </div>
+
+          {/* Stats & Analytics - Bar Chart */}
+          <h3>PII Analytics:</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={getChartData()}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="type" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
 
           <table border="1" cellPadding="5">
             <thead>
