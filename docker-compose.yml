@@ -1,0 +1,8 @@
+version: '3'
+services:
+  presidio-analyzer:
+    image: mcr.microsoft.com/presidio-analyzer
+    ports:
+      - "5001:3000"
+    environment:
+      - ANALYZER_LOG_LEVEL=debug

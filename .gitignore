@@ -1,0 +1,29 @@
+# Node modules
+client/node_modules
+server/node_modules
+
+# Build files
+client/build
+server/dist
+
+# Environment variables
+client/.env
+server/.env
+.env
+
+# Log files
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode
+.idea
+
+# OS generated
+*.pid
+
+# Optional: Ignore coverage reports if you use testing
+coverage
