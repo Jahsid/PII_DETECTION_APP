@@ -9,6 +9,7 @@ export default function App() {
   const [riskLevel, setRiskLevel] = useState("");
   const [suggestion, setSuggestion] = useState("");
   const [loading, setLoading] = useState(false);
+  const [redactedText, setRedactedText] = useState("");
 
   const detectPII = async () => {
     setLoading(true);
@@ -17,6 +18,7 @@ export default function App() {
       setResults(response.data);
       generateSummary(response.data);
       estimateRisk(response.data);
+      setRedactedText(""); // Reset redacted text on new detection
     } catch (error) {
       console.error(error);
       alert("Error detecting PII");
@@ -75,17 +77,10 @@ export default function App() {
     let lastIndex = 0;
 
     sortedResults.forEach((item, idx) => {
-      if (item.start < lastIndex) {
-        // Overlapping entity, skip
-        return;
-      }
+      if (item.start < lastIndex) return;
       parts.push(text.substring(lastIndex, item.start));
       parts.push(
-        <span
-          key={idx}
-          className="highlight"
-          title={item.entity_type}
-        >
+        <span key={idx} className="highlight" title={item.entity_type}>
           {text.substring(item.start, item.end)}
         </span>
       );
@@ -94,6 +89,24 @@ export default function App() {
 
     parts.push(text.substring(lastIndex));
     return parts;
+  };
+
+  const redactText = () => {
+    if (!results.length) return;
+
+    const sortedResults = [...results].sort((a, b) => a.start - b.start);
+    let redacted = "";
+    let lastIndex = 0;
+
+    sortedResults.forEach((item) => {
+      if (item.start < lastIndex) return;
+      redacted += text.substring(lastIndex, item.start);
+      redacted += "[REDACTED]";
+      lastIndex = item.end;
+    });
+
+    redacted += text.substring(lastIndex);
+    setRedactedText(redacted);
   };
 
   return (
@@ -117,28 +130,33 @@ export default function App() {
         <div className="results">
           <h2>Detected PII:</h2>
 
-          {/* Highlighted Text */}
           <p className="highlighted-text">{getHighlightedText()}</p>
 
-          {/* Risk Level */}
-          <h3>Estimated Risk Level: {riskLevel}</h3>
+          {/* Redact Button */}
+          <button onClick={redactText} className="redact-btn">
+            Redact PII
+          </button>
 
-          {/* Suggestion */}
+          {/* Show Redacted Text */}
+          {redactedText && (
+            <div className="redacted-section">
+              <h3>Redacted Text:</h3>
+              <p className="redacted-text">{redactedText}</p>
+            </div>
+          )}
+
+          <h3>Estimated Risk Level: {riskLevel}</h3>
           <p><strong>Suggestion:</strong> {suggestion}</p>
 
-          {/* Summary Section */}
           <div>
             <h3>PII Summary:</h3>
             <ul>
               {Object.entries(summary).map(([type, count]) => (
-                <li key={type}>
-                  {type}: {count}
-                </li>
+                <li key={type}>{type}: {count}</li>
               ))}
             </ul>
           </div>
 
-          {/* Detailed Results Table */}
           <table border="1" cellPadding="5">
             <thead>
               <tr>

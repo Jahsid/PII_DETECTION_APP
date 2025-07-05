@@ -13,6 +13,15 @@ textarea {
 button {
   padding: 10px 20px;
   font-size: 16px;
+  margin: 5px 0;
+}
+
+.redact-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  margin-top: 10px;
+  cursor: pointer;
 }
 
 .results {
@@ -30,4 +39,15 @@ button {
   background-color: yellow;
   cursor: help;
   font-weight: bold;
+}
+
+.redacted-section {
+  margin-top: 15px;
+}
+
+.redacted-text {
+  background: #eee;
+  padding: 10px;
+  border: 1px solid #ccc;
+  white-space: pre-wrap;
 }
